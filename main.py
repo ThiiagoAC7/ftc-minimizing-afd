@@ -23,7 +23,7 @@ def parseXML(xml):
     transitions = []
     alphabet = []
     finals = []
-    initial = State("", "")
+    initial = State("", -1)
 
     tree = ET.parse(xml)
     root = tree.getroot()
@@ -38,27 +38,28 @@ def parseXML(xml):
 
         if child.tag == 'state':
             name = child.get('name')
-            tag = ""
+            id = child.get('id')
             if child.find('initial') != None:
-                tag = "i"
-                initial = State(name, tag)
+                initial = State(name, id)
             if child.find('final') != None:
-                tag = "f"
-                finals.append(State(name, tag))
-            states.append(State(name, tag))
+                finals.append(State(name, id))
+            states.append(State(name, id))
 
         if child.tag == 'transition':
             from_state = child.find('from').text
             to_state = child.find('to').text
             symbol = child.find('read').text
+
             if symbol not in alphabet:
                 alphabet.append(symbol)
-            transitions.append(Transition(from_state, to_state, symbol))
+            t = Transition(from_state, to_state, symbol)
+            transitions.append(t)
+            states[int(from_state)].transitions.append(t)
 
     return AFD(states, alphabet, transitions, initial, finals)
 
 
-def minimizeAFDnn(P):
+def minimizeAFDnn(P: AFD):
     """
     Minimiza um AFD, em complexidade O(n^2)
 
@@ -72,10 +73,20 @@ def minimizeAFDnn(P):
     minP:
         um AFD mínimo equivalente a P 
     """
-    return 0
+    if len(P.finals) == 0:  # Sem estados finais
+        _transitions = []
+        for a in P.alphabet:
+            _transitions.append(Transition(P.init.id, P.init.id, a))
+        return AFD(P.init, P.alphabet, _transitions, P.init, [])
+
+    elif len(P.states) == len(P.finals):  # Só estados finais
+        _transitions = []
+        for a in P.alphabet:
+            _transitions.append(Transition(P.init.id, P.init.id, a))
+        return AFD(P.init, P.alphabet, _transitions, P.init, P.init)
 
 
-def minimizeAFDnlogn(P):
+def minimizeAFDnlogn(P: AFD):
     """
     Minimiza um AFD, em complexidade O(n log n)
 
@@ -93,8 +104,10 @@ def minimizeAFDnlogn(P):
 
 
 def main():
-    P = parseXML('./tests/test2.jff')
-    print(P)
+    # P = parseXML('./tests/test2.jff')
+    # print(P)
+    p = parseXML('./tests/test_sofinal.jff')
+    print(minimizeAFDnn(p))
 
 
 if __name__ == "__main__":
