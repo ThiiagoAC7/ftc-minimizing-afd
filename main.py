@@ -62,7 +62,7 @@ def parse_xml(xml):
     return AFD(states, alphabet, transitions, initial, finals)
 
 
-def minimizeAFDnn(P: AFD):
+def minimizeAFDnn(P: AFD, debug=False):
     """
     Minimiza um AFD, em complexidade O(n^2)
 
@@ -91,7 +91,7 @@ def minimizeAFDnn(P: AFD):
         conjunto que contém _e
         """
         for i in _S:
-            if _e in i:
+            if _e in [j.id for j in i]:
                 return i
 
     if len(P.finals) == 0:  # Sem estados finais
@@ -114,20 +114,19 @@ def minimizeAFDnn(P: AFD):
     while (len(S) == 1) or (S[n] != S[n-1]):
         n = n+1
         S.append([])
-        print(f'S[n-1] ->> {S[n-1]}')
+        if debug: print(f'S[n-1] ->> {S[n-1]}')
         for X in S[n-1]:
-            print(f'X ->> {X}')
+            if debug: print(f'X ->> {X}')
             while X != []:
                 e = X[0]
-                print(f'e -> {e}')
+                if debug: print(f'\te -> {e}')
                 transitions_set = {}
                 for a in P.alphabet:
-                    print(f'Alfabet {a}')
-                    reachable_state = e.get_reachable_state_by_symbol(a)
-                    print(f'reachable state = {reachable_state}')
+                    if debug: print(f'\tΣ -> {a}')
+                    reachable_state = e.get_reachable_state_by_symbol(a, debug)
                     transitions_set[a] = _get_set_c_transition(
                         S[n-1], reachable_state)
-                    print(transitions_set[a])
+                    if debug: print(f'\ttransition_set[{a}]={transitions_set[a]}')
                 break
         break
 
@@ -149,11 +148,16 @@ def minimizeAFDnlogn(P: AFD):
     return 0
 
 
+debug = ''
+
+
 def main():
     # P = parse_xml('./tests/test2.jff')
     # print(P)
+    debug = input("Debug ? [y/n]:")
+    debug = debug == 'y'
     p = parse_xml('./tests/test_livro.jff')
-    # minimizeAFDnn(p)
+    minimizeAFDnn(p, debug)
 
 
 if __name__ == "__main__":

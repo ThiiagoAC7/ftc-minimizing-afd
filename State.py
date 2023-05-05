@@ -30,36 +30,20 @@ class State:
         except AttributeError:
             return NotImplemented
 
-    def get_transition_by_symbol(self, symbol):
+    def get_reachable_state_by_symbol(self, a, debug=False):
         '''
         Get a transição no estado para o simbolo em questão
 
         Params:
         -------
-        symbol:
-            o simbolo no alfabeto Σ 
+        a:
+            o simbolo no alfabeto Σ
 
         Return:
         -------
-        A transição no estado para o symbol
+        O estado de destino da transição do estado atual com a 
         '''
-        print(f'TRANSITIONS = {self._transition}')
         for t in self._transitions:
-            print(f'STATE = {self.name}, t = {t}')
-            if t.symbol == symbol:
-                return t
-
-    def get_reachable_state_by_symbol(self, symbol):
-        """
-        Get o estado de destino da transição com o symbol
-
-        Param:
-        ------
-        symbol:
-            Simbolo no alfabeto Σ 
-
-        Return:
-        -------
-        O estado atingido pela transição com o símbolo
-        """
-        return self.get_transition_by_symbol(symbol).dst_state
+            if t.symbol == a:
+                if debug: print(f'\tδ({self.id},{a}) = {t}')
+                return t.dst_state
