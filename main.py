@@ -5,7 +5,7 @@ from Transition import Transition
 from AFD import AFD
 
 
-def parseXML(xml):
+def parse_xml(xml):
     """
     Extrai do XML as informações do AFD sendo analisado
 
@@ -19,6 +19,7 @@ def parseXML(xml):
     AFD = (E,Σ,δ,i,F)
 
     """
+
     states = []
     transitions = []
     alphabet = []
@@ -40,21 +41,23 @@ def parseXML(xml):
             name = child.get('name')
             id = child.get('id')
             if child.find('initial') != None:
-                initial = State(name, id)
+                initial = State(name, int(id))
             if child.find('final') != None:
-                finals.append(State(name, id))
-            states.append(State(name, id))
+                finals.append(State(name, int(id)))
+            states.append(State(name, int(id)))
 
         if child.tag == 'transition':
-            from_state = child.find('from').text
-            to_state = child.find('to').text
             symbol = child.find('read').text
-
             if symbol not in alphabet:
                 alphabet.append(symbol)
-            t = Transition(from_state, to_state, symbol)
-            transitions.append(t)
-            states[int(from_state)].transitions.append(t)
+
+            src_state = int(child.find('from').text)
+            dst_state = int(child.find('to').text)
+
+            states[src_state]._transitions.append(
+                Transition(src_state, dst_state, symbol))
+            # print(f'e = {states[src_state]}, transitions = {states[src_state]._transitions}')
+            transitions.append(Transition(src_state, dst_state, symbol))
 
     return AFD(states, alphabet, transitions, initial, finals)
 
@@ -73,6 +76,24 @@ def minimizeAFDnn(P: AFD):
     minP:
         um AFD mínimo equivalente a P 
     """
+
+    def _get_set_c_transition(_S, _e):
+        """
+        pega o conjunto em Sn-1 que contém _e
+
+        Params:
+        -------
+        _S : Sn-1
+        _e : Estado sendo analisado na equivalência
+
+        Return:
+        -------
+        conjunto que contém _e
+        """
+        for i in _S:
+            if _e in i:
+                return i
+
     if len(P.finals) == 0:  # Sem estados finais
         _transitions = []
         for a in P.alphabet:
@@ -84,6 +105,31 @@ def minimizeAFDnn(P: AFD):
         for a in P.alphabet:
             _transitions.append(Transition(P.init.id, P.init.id, a))
         return AFD(P.init, P.alphabet, _transitions, P.init, P.init)
+
+    n = 0
+    S = []  # equivalencias
+    S.append([P.get_non_final_states()])
+    S[n].append(P.finals)
+
+    while (len(S) == 1) or (S[n] != S[n-1]):
+        n = n+1
+        S.append([])
+        print(f'S[n-1] ->> {S[n-1]}')
+        for X in S[n-1]:
+            print(f'X ->> {X}')
+            while X != []:
+                e = X[0]
+                print(f'e -> {e}')
+                transitions_set = {}
+                for a in P.alphabet:
+                    print(f'Alfabet {a}')
+                    reachable_state = e.get_reachable_state_by_symbol(a)
+                    print(f'reachable state = {reachable_state}')
+                    transitions_set[a] = _get_set_c_transition(
+                        S[n-1], reachable_state)
+                    print(transitions_set[a])
+                break
+        break
 
 
 def minimizeAFDnlogn(P: AFD):
@@ -104,10 +150,10 @@ def minimizeAFDnlogn(P: AFD):
 
 
 def main():
-    # P = parseXML('./tests/test2.jff')
+    # P = parse_xml('./tests/test2.jff')
     # print(P)
-    p = parseXML('./tests/test_sofinal.jff')
-    print(minimizeAFDnn(p))
+    p = parse_xml('./tests/test_livro.jff')
+    # minimizeAFDnn(p)
 
 
 if __name__ == "__main__":

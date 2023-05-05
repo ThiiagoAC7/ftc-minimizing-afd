@@ -28,3 +28,7 @@ class AFD:
 
     def __repr__(self):
         return f' E={self.states} \n Σ={self.alphabet} \n δ={self.transitions} \n i={self.init} \n F={self.finals}'
+
+    def get_non_final_states(self):
+        _l = list(set(self.states) - set(self.finals))
+        return sorted(_l, key=lambda x: x.id)

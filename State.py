@@ -2,7 +2,7 @@ from Transition import Transition
 
 
 class State:
-    def __init__(self, name, id, transitions=[]):
+    def __init__(self, name, id, _transitions=[]):
         """
         Estado do automato
 
@@ -16,10 +16,19 @@ class State:
         """
         self.name = name
         self.id = id
-        self.transitions = transitions
+        self._transitions = []
 
     def __repr__(self):
         return f'State(name={self.name},id={self.id})'
+
+    def __hash__(self):
+        return hash((self.id, self.name))
+
+    def __eq__(self, other):
+        try:
+            return (self.id, self.name) == (other.id, other.name)
+        except AttributeError:
+            return NotImplemented
 
     def get_transition_by_symbol(self, symbol):
         '''
@@ -34,7 +43,9 @@ class State:
         -------
         A transição no estado para o symbol
         '''
-        for t in self.transitions:
+        print(f'TRANSITIONS = {self._transition}')
+        for t in self._transitions:
+            print(f'STATE = {self.name}, t = {t}')
             if t.symbol == symbol:
                 return t
 
