@@ -45,5 +45,5 @@ class State:
         '''
         for t in self._transitions:
             if t.symbol == a:
-                if debug: print(f'\tδ({self.id},{a}) = {t}')
+                # if debug: print(f'\tδ({self.id},{a}) = {t}')
                 return t.dst_state

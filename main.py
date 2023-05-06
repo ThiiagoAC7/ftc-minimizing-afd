@@ -114,21 +114,46 @@ def minimizeAFDnn(P: AFD, debug=False):
     while (len(S) == 1) or (S[n] != S[n-1]):
         n = n+1
         S.append([])
-        if debug: print(f'S[n-1] ->> {S[n-1]}')
         for X in S[n-1]:
-            if debug: print(f'X ->> {X}')
             while X != []:
                 e = X[0]
-                if debug: print(f'\te -> {e}')
                 transitions_set = {}
                 for a in P.alphabet:
-                    if debug: print(f'\tΣ -> {a}')
                     reachable_state = e.get_reachable_state_by_symbol(a, debug)
                     transitions_set[a] = _get_set_c_transition(
                         S[n-1], reachable_state)
-                    if debug: print(f'\ttransition_set[{a}]={transitions_set[a]}')
-                break
-        break
+                Y = []
+                Y.append(e)
+                for _e in X[1:]:
+                    count = 0
+                    for a in P.alphabet:
+                        if _e.get_reachable_state_by_symbol(a) in [j.id for j in transitions_set[a]]:
+                            count += 1
+                    if count == len(P.alphabet):
+                        Y.append(_e)
+
+                X = list(set(X) - set(Y))
+                S[n].append(Y)
+
+    for i in S[n]:
+        if P.init in i:
+            _i = i
+
+    _f = []
+    for i in S[n]:
+        if set(P.finals).issubset(i):
+            _f.append(i)
+
+    _T = []
+    for index, x in enumerate(S[n]):
+        for a in P.alphabet:
+            _transition = _get_set_c_transition(
+                S[n], x[0].get_reachable_state_by_symbol(a))
+            _T.append(Transition(str(x), str(_transition), a))
+
+    minimized_P = AFD(S[n], P.alphabet, _T, _i, _f)
+
+    return minimized_P
 
 
 def minimizeAFDnlogn(P: AFD):
@@ -148,16 +173,11 @@ def minimizeAFDnlogn(P: AFD):
     return 0
 
 
-debug = ''
-
-
 def main():
-    # P = parse_xml('./tests/test2.jff')
-    # print(P)
     debug = input("Debug ? [y/n]:")
     debug = debug == 'y'
     p = parse_xml('./tests/test_livro.jff')
-    minimizeAFDnn(p, debug)
+    min_p = minimizeAFDnn(p, debug)
 
 
 if __name__ == "__main__":

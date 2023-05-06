@@ -21,3 +21,4 @@ class Transition:
 
     def __repr__(self):
         return f'Transition(src_state={self.src_state}, dst_state={self.dst_state}, symbol={self.symbol})' 
+
