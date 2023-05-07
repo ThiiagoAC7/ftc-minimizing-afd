@@ -2,7 +2,7 @@ import xml.etree.ElementTree as ET
 
 from AFD import AFD
 
-from Minimize import min_nn, min_nlogn
+from Minimize import min_nn, min_nlogn, min_new
 
 
 def parse_xml(xml):
@@ -63,8 +63,9 @@ def main():
     # p = parse_xml( './tests/unreachable_states.jff')
 
     p.remove_unreachable_states()
-    min_p = min_nn(p)
-    print(min_p)
+    # min_p = min_nn(p)
+    min_new(p.states, p.alphabet, p.transitions, p.init, p.finals)
+    # print(min_p)
     # min_p = min_nlogn(states, alphabet, transitions, initial, finals)
 
 

@@ -137,3 +137,35 @@ def min_nn(P: AFD):
         SN.append(str(i))
 
     return AFD(set(SN), P.alphabet, _T, _i, _f)
+
+def min_new(states, alphabet, transitions, initial, finals):
+
+    accepting = finals
+    non_accepting = states - finals
+    partitions = [accepting, non_accepting] 
+
+    partition_lists = []
+    partition_sizes = []
+    partition_transitions = []
+
+    for p in partitions:
+        partition_lists.append(list(p))
+        partition_sizes.append(len(p))
+        partition_transitions.append({})
+
+    print(f'partitions -> {partitions}')
+    print(f'partition_lists -> {partition_lists}')
+    print(f'partition_sizes -> {partition_sizes}')
+    print(f'partition_transitions -> {partition_transitions}')
+
+    for symbol in alphabet:
+        for i, current_partition in enumerate(partition_lists):
+            print('==================================')
+            print(f'current_partition -> {current_partition}')
+            print(f'counter -> {i}')
+            for current_state in current_partition:
+                t = transitions[current_state, symbol]
+                print(f'\tstate -> {current_state} with symbol -> {symbol} goes to -> {t}')
+                if t is not None:
+                    if t not in current_partition:
+                        print('\t\tnot in the current partition')
