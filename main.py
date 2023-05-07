@@ -101,7 +101,7 @@ def main():
 
     p.remove_unreachable_states()
     # min_p = min_nn(p)
-    min_new(p.states, p.alphabet, p.transitions, p.init, p.finals)
+    min_new(p.states, list(p.alphabet), p.transitions, p.init, p.finals)
     # print(min_p)
     # min_p = min_nlogn(states, alphabet, transitions, initial, finals)
 
