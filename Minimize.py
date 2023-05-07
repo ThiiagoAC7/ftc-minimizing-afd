@@ -118,7 +118,7 @@ def min_nn(P: AFD):
     _i = -1
     for i in S[n]:
         if P.init in i:
-            _i = i
+            _i = str(i)
 
     _f = set()
     for i in S[n]:

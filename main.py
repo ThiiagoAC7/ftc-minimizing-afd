@@ -57,6 +57,43 @@ def parse_xml(xml):
 
     return AFD(states, alphabet, transitions, initial, finals)
 
+def write_xml(P: AFD, filename):
+    with open(f'./results/{filename}', 'w') as f:
+        f.write('<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n')
+        f.write('<structure>&#13;\n')
+        f.write('\t<type>fa</type>&#13;\n')
+        f.write('\t<automaton>&#13;\n')
+        
+        f.write('\t\t<!--The list of states.-->&#13;\n')
+		
+        _index_state = {}
+        for index, state in enumerate(P.states):
+            _index_state[state] = index
+            f.write(f'\t\t<state id="{index}" name="{state}">&#13;\n')
+            f.write('\t\t\t<x>0</x>&#13;\n')
+            f.write('\t\t\t<y>0</y>&#13;\n')
+            # print(f'{state}=={P.init} {state == P.init}')
+            # print(f'{type(state)}=={type(P.init)}')
+            if state == P.init:
+                f.write('\t\t\t<initial/>&#13;\n')
+
+            if state in P.finals:
+                f.write('\t\t\t<final/>&#13;\n')
+
+            f.write('\t\t</state>&#13;\n')
+
+
+        f.write('\t\t<!--The list of transitions.-->&#13;\n')
+
+        for (src_state, symbol), dst_state in P.transitions.items():
+            f.write('\t\t<transition>&#13;\n')
+            f.write(f'\t\t\t<from>{_index_state[src_state]}</from>&#13;\n')
+            f.write(f'\t\t\t<to>{_index_state[dst_state]}</to>&#13;\n')
+            f.write(f'\t\t\t<read>{symbol}</read>&#13;\n')
+            f.write('\t\t</transition>&#13;\n')
+
+        f.write('\t</automaton>&#13;\n')
+        f.write('</structure>&#13;\n')
 
 def main():
     p = parse_xml( './tests/test_livro.jff')
