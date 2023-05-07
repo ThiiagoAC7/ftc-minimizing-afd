@@ -24,7 +24,7 @@ def parse_xml(xml):
     transitions = {}
     alphabet = set()
     finals = set()
-    initial = -1
+    initial = '' 
 
     tree = ET.parse(xml)
     root = tree.getroot()
@@ -36,9 +36,9 @@ def parse_xml(xml):
 
         if child.tag == 'state':
             name = child.get('name')
-            id = int(child.get('id'))
+            id = child.get('id')
             if child.find('initial') != None:
-                initial = int(id)
+                initial = id
             if child.find('final') != None:
                 # finals.append(State(name, int(id)))
                 finals.add(id)
@@ -50,8 +50,8 @@ def parse_xml(xml):
             if symbol not in alphabet:
                 alphabet.add(symbol)
 
-            src_state = int(child.find('from').text)
-            dst_state = int(child.find('to').text)
+            src_state = child.find('from').text
+            dst_state = child.find('to').text
 
             transitions[(src_state, symbol)] = dst_state
 
@@ -60,7 +60,9 @@ def parse_xml(xml):
 
 def main():
     p = parse_xml( './tests/test_livro.jff')
+    # p = parse_xml( './tests/unreachable_states.jff')
 
+    p.remove_unreachable_states()
     min_p = min_nn(p)
     print(min_p)
     # min_p = min_nlogn(states, alphabet, transitions, initial, finals)

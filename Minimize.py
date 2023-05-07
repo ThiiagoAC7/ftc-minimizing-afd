@@ -99,16 +99,15 @@ def min_nn(P: AFD):
                 e = list(X)[0]
                 transitions_set = {}
                 for a in P.alphabet:
-                    reachable_state = P.transitions[(e, a)]
-                    transitions_set[a] = _get_set_c_transition(
-                        S[n-1], reachable_state)
+                    reachable_state = P.get_reachable_state_by_symbol(e, a)
+                    transitions_set[a] = _get_set_c_transition( S[n-1], reachable_state)
 
                 Y = []
                 Y.append(e)
                 for _e in list(X)[1:]:
                     count = 0
                     for a in P.alphabet:
-                        if P.transitions[_e, a] in transitions_set[a]:
+                        if P.get_reachable_state_by_symbol(_e, a) in transitions_set[a]:
                             count += 1
                     if count == len(P.alphabet):
                         Y.append(_e)
@@ -129,8 +128,9 @@ def min_nn(P: AFD):
     _T = {}
     for x in S[n]:
         for a in P.alphabet:
-            _transition = _get_set_c_transition(S[n], P.transitions[x[0], a])
-            _T[str(x), str(_transition)] = a
+            _dst_state = _get_set_c_transition(S[n], P.get_reachable_state_by_symbol(x[0], a) )
+            if _dst_state != set():
+                _T[str(x), a] = str(_dst_state)
 
     SN = []
     for i in S[n]:
