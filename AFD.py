@@ -1,5 +1,5 @@
 class AFD:
-    def __init__(self, states, alphabet, transitions, init, finals):
+    def __init__(self, states=set(), alphabet=set(), transitions={}, init=-1, finals=set()):
         """
         Automato Finito Deterministico
 
@@ -12,7 +12,7 @@ class AFD:
             Σ, Alfabeto reconhecido pelo Automato
 
         transitions:
-            δ, Transições do Automato
+            δ, Transições do Automato no formato = δ(e,a):_e
 
         init:
             i, Estado inicial
@@ -28,7 +28,3 @@ class AFD:
 
     def __repr__(self):
         return f' E={self.states} \n Σ={self.alphabet} \n δ={self.transitions} \n i={self.init} \n F={self.finals}'
-
-    def get_non_final_states(self):
-        _l = list(set(self.states) - set(self.finals))
-        return sorted(_l, key=lambda x: x.id)
