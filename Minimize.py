@@ -3,53 +3,55 @@ import xml.etree.ElementTree as ET
 from AFD import AFD
 
 
-def min_nlogn(states, alphabet, transitions, initial, finals):
+def min_nlogn(P: AFD):
 
-    p = [finals, states - finals]
-    w = [finals]
+    partitions = [P.finals, P.states - P.finals]
 
-    while len(w) > 0:
-        a = w.pop(0)
-        for symbol in alphabet:
-            x = set()
-            for s in states:
-                if (s, symbol) in transitions and transitions[(s, symbol)] in a:
-                    x.add(s)
+    partition_transitions = {} # estado : partition 
 
-            for y in p:
-                if len(x & y) > 0 and len(y - x) > 0:
-                    p.remove(y)
-                    p.append(x & y)
-                    p.append(y - x)
-                    if y in w:
-                        w.remove(y)
-                        w.append(x & y)
-                        w.append(y - x)
-                    else:
-                        if len(x & y) <= len(y - x):
-                            w.append(x & y)
-                        else:
-                            w.append(y - x)
+    # for e in P.states:
+    #     for p in partitions:
+    #         if e in p: partition_transitions[e] = p
 
-    _states = range(len(p))
-    _transitions = {}
+    new_partition = []
+    while new_partition != partitions:
+        new_partition = partitions
+        partitions = new_partition
+        print(f'new_partition = {new_partition}')
+        print(f'partitions = {partitions}')
+        new_current_partition = []
+        for current_partition in new_partition:
+            print(f'\t current_partition = {current_partition}')
+            if len(current_partition) == 1:
+                new_current_partition.append(current_partition)
+                print(f'\t\t new_current_partition = {new_current_partition}')
+            elif len(current_partition) > 1:
+                splitted_partitions = set()
 
-    for i in _states:
-        for symbol in alphabet:
-            s = next(iter(p[i]))
-            t = transitions.get((s, symbol), None)
-            if t is not None:
-                for j, partition in enumerate(p):
-                    if t in partition:
-                        _transitions[(i, symbol)] = j
-                        break
+                for a in P.alphabet:
+                    for current_state in current_partition:
+                        t = P.transitions.get((current_state, a))
+                        print( f'\t\tδ({current_state},{a}) = {t}')
+                        if t and t not in current_partition:
+                            splitted_partitions.add(current_state)
+                            print( f'\t\t\t splitted_partitions = {splitted_partitions}')
 
-    _initial = next(i for i, partition in enumerate(
-        p) if initial in partition)
-    _finals = set(i for i, partition in enumerate(
-        p) if len(finals & partition) > 0)
+                if len(splitted_partitions) > 0 and len(splitted_partitions) < len(current_partition):
+                    _current_partiton_1 = set(current_partition) - splitted_partitions
+                    _current_partiton_2 = splitted_partitions
+                    print( f'\t\t\t -> splits = {_current_partiton_1} , {_current_partiton_2}')
+                    new_current_partition.append(_current_partiton_1)
+                    new_current_partition.append(_current_partiton_2)
 
-    return AFD(_states, alphabet, _transitions, _initial, _finals)
+                print(f'\t\t\t new_current_partition = {new_current_partition}')
+            _fodase = input('>')
+
+        partitions = new_current_partition
+
+
+    print(partitions)
+
+    return 0
 
 
 def min_nn(P: AFD):
@@ -129,7 +131,8 @@ def min_nn(P: AFD):
     _T = {}
     for x in S[n]:
         for a in P.alphabet:
-            _dst_state = _get_set_c_transition( S[n], P.get_reachable_state_by_symbol(x[0], a))
+            _dst_state = _get_set_c_transition(
+                S[n], P.get_reachable_state_by_symbol(x[0], a))
             if _dst_state != set():
                 _T[str(x), a] = str(_dst_state)
 
@@ -141,12 +144,6 @@ def min_nn(P: AFD):
 
 
 def min_new(states, alphabet, transitions, initial, finals):
-
-    def _get_set_c_transition(_S, _e):
-        for i in _S:
-            if _e in i:
-                return i
-
     accepting = finals
     non_accepting = states - finals
     partitions = [accepting, non_accepting]
@@ -167,10 +164,9 @@ def min_new(states, alphabet, transitions, initial, finals):
 
     for symbol in alphabet:
         for i, current_partition in enumerate(partition_lists):
-            new_partitions = set() 
+            new_partitions = set()
             print(f'=================================={i}')
             print(f'current_partition -> {current_partition}')
-            # print(f'counter -> {partition_sizes[i]}')
 
             for current_state in current_partition:
                 t = transitions.get((current_state, symbol))
@@ -178,28 +174,20 @@ def min_new(states, alphabet, transitions, initial, finals):
                 if t and t not in current_partition:
                     new_partitions.add(current_state)
 
-                    # print('\t\tnot in the current partition')
                 print(f'new_partitions -> {new_partitions}')
 
             if len(new_partitions) > 0 and len(new_partitions) < len(current_partition):
                 new_partitions_1 = set(current_partition) - new_partitions
                 new_partitions_2 = new_partitions
-                print(f'group_1 = {new_partitions_1}, group_2 = {new_partitions_2}, current_partition = {current_partition}')
-                # partition_lists[i] = list(new_partitions_1)
+                print(
+                    f'group_1 = {new_partitions_1}, group_2 = {new_partitions_2}, current_partition = {current_partition}')
                 partition_lists.pop(i)
                 partition_lists.append(list(new_partitions_1))
-                # partition_sizes[i] = len(partition_lists[i])
                 partition_lists.append(list(new_partitions_2))
                 partition_sizes.append(len(list(new_partitions_2)))
 
-                print(partition_lists)
-            else:
-                print(f'current_partition = {current_partition}, partition_list = {partition_lists}')
-    
-    new_states = set() 
+    new_states = set()
     for i in partition_lists:
         new_states.add(str(i))
-    
-    print(new_states)
-    
 
+    print(new_states)

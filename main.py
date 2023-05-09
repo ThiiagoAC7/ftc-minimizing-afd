@@ -1,7 +1,7 @@
 import xml.etree.ElementTree as ET
+import time
 
 from AFD import AFD
-
 from Minimize import min_nn, min_nlogn, min_new
 
 
@@ -24,7 +24,7 @@ def parse_xml(xml):
     transitions = {}
     alphabet = set()
     finals = set()
-    initial = '' 
+    initial = ''
 
     tree = ET.parse(xml)
     root = tree.getroot()
@@ -57,15 +57,16 @@ def parse_xml(xml):
 
     return AFD(states, alphabet, transitions, initial, finals)
 
+
 def write_xml(P: AFD, filename):
     with open(f'./results/{filename}', 'w') as f:
         f.write('<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n')
         f.write('<structure>&#13;\n')
         f.write('\t<type>fa</type>&#13;\n')
         f.write('\t<automaton>&#13;\n')
-        
+
         f.write('\t\t<!--The list of states.-->&#13;\n')
-		
+
         _index_state = {}
         for index, state in enumerate(P.states):
             _index_state[state] = index
@@ -82,7 +83,6 @@ def write_xml(P: AFD, filename):
 
             f.write('\t\t</state>&#13;\n')
 
-
         f.write('\t\t<!--The list of transitions.-->&#13;\n')
 
         for (src_state, symbol), dst_state in P.transitions.items():
@@ -93,17 +93,31 @@ def write_xml(P: AFD, filename):
             f.write('\t\t</transition>&#13;\n')
 
         f.write('\t</automaton>&#13;\n')
-        f.write('</structure>&#13;\n')
+        f.write('</structure>\n')
+
 
 def main():
-    p = parse_xml( './tests/test_livro.jff')
+    p = parse_xml('./tests/test_livro.jff')
     # p = parse_xml( './tests/unreachable_states.jff')
 
     p.remove_unreachable_states()
+
+    # start = time.time()
     # min_p = min_nn(p)
-    min_new(p.states, list(p.alphabet), p.transitions, p.init, p.finals)
+    # end = time.time()
+
+    # write_xml(min_p, '_test_n2.jff')
+
+    # _start = time.time()
+    min_p = min_nlogn(p)
+    # _end = time.time()
+    
     # print(min_p)
-    # min_p = min_nlogn(states, alphabet, transitions, initial, finals)
+    # write_xml(min_p, '_test_nlogn.jff')
+    # time_nn = end-start
+
+    # print(f'time n^2 = {end-start}')
+    # print(f'time nlogn = {end-start}')
 
 
 if __name__ == "__main__":
