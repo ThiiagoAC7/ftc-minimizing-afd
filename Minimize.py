@@ -116,7 +116,7 @@ def min_nn(P: AFD):
 
     _f = set()
     for i in S[n]:
-        if P.finals.issubset(i):
+        if set(i) <= P.finals:
             _f.add(str(i))
 
     _T = {}

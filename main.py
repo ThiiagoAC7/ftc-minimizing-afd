@@ -109,7 +109,7 @@ def main():
     # write_xml(min_p, '_test_n2.jff')
 
     # _start = time.time()
-    min_p = min_new(p)
+    min_p = min_nlogn(p)
     # _end = time.time()
     
     # print(min_p)
