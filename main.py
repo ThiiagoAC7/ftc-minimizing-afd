@@ -97,13 +97,14 @@ def write_xml(P: AFD, filename):
 
 
 def main():
-    p = parse_xml('./tests/test_livro_modded.jff')
+    p = parse_xml('./tests/test_livro.jff')
     # p = parse_xml( './tests/unreachable_states.jff')
 
     p.remove_unreachable_states()
 
     # start = time.time()
     # min_p = min_nn(p)
+    # print(min_p)
     # end = time.time()
 
     # write_xml(min_p, '_test_n2.jff')
