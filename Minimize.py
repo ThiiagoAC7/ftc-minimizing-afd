@@ -4,46 +4,93 @@ from AFD import AFD
 
 
 def min_nlogn(P: AFD):
+    t = 2
+    Q = []
+    Q.append(P.finals)
+    Q.append(P.states - P.finals)
 
-    partitions = [P.finals, P.states - P.finals]
+    inverted_triangle = {}
 
-    new_partition = []
-    while new_partition != partitions:
-        new_partition = partitions
-        partitions = new_partition
-        print(f'new_partition = {new_partition}')
-        print(f'partitions = {partitions}')
-        new_current_partition = []
-        for current_partition in new_partition:
-            print(f'\t current_partition = {current_partition}')
-            if len(current_partition) == 1:
-                new_current_partition.append(current_partition)
-                print(f'\t\t new_current_partition = {new_current_partition}')
-            elif len(current_partition) > 1:
-                splitted_partitions = set()
-                for a in P.alphabet:
-                    for current_state in current_partition:
-                        t = P.transitions.get((current_state, a))
-                        print(f'\t\tδ({current_state},{a}) = {t}')
-                        if t and t not in current_partition:
-                            splitted_partitions.add(current_state)
-                            print( f'\t\t\t splitted_partitions = {splitted_partitions}')
-                if len(splitted_partitions) > 0 and len(splitted_partitions) < len(current_partition):
-                    _current_partiton_1 = set( current_partition) - splitted_partitions
-                    _current_partiton_2 = splitted_partitions
-                    print( f'\t\t\t -> splits = {_current_partiton_1} , {_current_partiton_2}')
-                    new_current_partition.append(_current_partiton_1)
-                    new_current_partition.append(_current_partiton_2)
+    # constroi tabela de estados invertida
+    for key, value in P.transitions.items():
+        r_state = value
+        a = key[1]
+        l_state = key[0]
+        aux = inverted_triangle.get((r_state, a))
+        if aux is None:
+            inverted_triangle[(r_state, a)] = []
+        inverted_triangle[(r_state, a)].append(l_state)
 
-                print( f'\t\t\t new_current_partition = {new_current_partition}')
-            _fodase = input('>')
+    triangle = {}
+    for estado in P.states:
+        for a in P.alphabet:
+            triangle[(estado, a)] = set()
 
-        partitions = new_current_partition
+    # construindo estruturas
 
-    print(partitions)
+    _triangle = {}
+    L = {}  # contains each triple (i,a,j)
+    for a in P.alphabet:
+        # if L.get(a) is None: L[a] = {}
+        for i, partition in enumerate(Q):  # i
+            for j, q in enumerate(Q):     # j
+                for estado in partition:
+                    _t = P.transitions.get((estado, a))
+                    if _t and _t in q:
+                        iaj = str(i)+a+str(j)
+                        l = L.get(iaj)
+                        if l is None:
+                            L[iaj] = set()
+                            if _triangle.get((i,a)) is None:
+                                _triangle[(i,a)] = []
+                            _triangle[(i,a)].append(iaj)
+                        L[iaj].add(estado)
+                        triangle[(estado, a)] = iaj 
 
-    return 0
+    print(f'inverted_triangle = {inverted_triangle}')
+    print(f'triangle = {triangle}')
+    print(f'triangle linha = {_triangle}')
+    print(f'L = {L}')
+    
+    K = dict(filter(lambda elem: len(elem[1]) >= 2, _triangle.items()))
+    print(f'K = {K}')    
+    
+    _K = list(K.keys())
 
+    while len(_K) > 0:
+        print(f'K = {K}, _K = {_K}')    
+        print(f'L = {L}')
+        for i,a in _K:
+            _l1 = L[K[(i,a)][0]]
+            _l2 = L[K[(i,a)][1]]
+            print(f'\t _l1 = {_l1}')
+            print(f'\t _l2 = {_l2}')
+            old_iaj = ""
+            if len(_l1) <= len(_l2):
+                old_iaj = K[(i,a)][0]
+            else:
+                old_iaj = K[(i,a)][1]
+            new_i = str(t)
+            new_j = str(old_iaj[2]) # ultima char de iaj
+            new_iaj = new_i+a+new_j 
+            print(f'\t L old -> {L}')
+            L[new_iaj] = L.pop(old_iaj)
+            print(f'\t L new-> {L}')
+            print(f'\ttrianglinha old-> {_triangle}')
+            _triangle[(i,a)].remove(old_iaj)
+            _triangle[(t,a)] = [new_iaj]
+            print(f'\ttrianglinha new-> {_triangle}')
+            if len(_triangle[(i,a)]) < 2:
+                _K.remove((i,a))
+                K.pop((i,a))
+            for q in L[new_iaj]:
+                print(f'\t\t q new_iaj -> {q}')
+                for b in (P.alphabet - set(a)):
+                    print(f'\t\t triangle({q},{b}) = {triangle[(q,b)]}')
+                    print(f'\t\t\t result = {L[triangle[(q,b)]]}')
+                    unique_record = L[triangle[(q,b)]]
+                    if unique_record:
+                        L[triangle[(q,b)]].remove(q)
 
 def min_nn(P: AFD):
     """
@@ -137,9 +184,9 @@ def min_nn(P: AFD):
 def min_new(P: AFD):
 
     inverted_state_table = {}
-    
-    # constroi tabela de estados invertida 
-    for key, value in P.transitions.items(): 
+
+    # constroi tabela de estados invertida
+    for key, value in P.transitions.items():
         r_state = value
         a = key[1]
         l_state = key[0]
@@ -162,19 +209,21 @@ def min_new(P: AFD):
                 t = inverted_state_table.get((e, a))
                 if t:
                     x = x.union(t)
-            print(f'\testados que chegam em {current_partition} com {a} -> {x}')
+            print(
+                f'\testados que chegam em {current_partition} com {a} -> {x}')
             for r in partitions:
                 print(f'\t r -> {r}, x = {x}')
                 if (len(r & x) > 0) and not (r <= x):
-                    splitted_partition_1 = set(r) & x # r1
-                    splitted_partition_2 = set(r) - x # r2
+                    splitted_partition_1 = set(r) & x  # r1
+                    splitted_partition_2 = set(r) - x  # r2
                     print(f'\t r1 -> {splitted_partition_1}')
                     print(f'\t r2 -> {splitted_partition_2}')
                     partitions.remove(r)
                     partitions.append(splitted_partition_1)
                     partitions.append(splitted_partition_2)
                     if r in w:
-                        print(f'\t\tt {r} pertence à {w}, replace r com r1 e r2')
+                        print(
+                            f'\t\tt {r} pertence à {w}, replace r com r1 e r2')
                         w.remove(r)
                         w.append(splitted_partition_1)
                         w.append(splitted_partition_2)
@@ -189,4 +238,3 @@ def min_new(P: AFD):
 
     print(partitions)
     # construir AFD a partir de estados criados
-
