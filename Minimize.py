@@ -55,11 +55,16 @@ def min_nlogn(P: AFD):
     print(f'K = {K}')
 
     _K = list(K.keys())
-
+    #acho que as somas de t tão erradas
     while len(_K) > 0:
         for i, a in _K:
+            _f = input('>')
+            print(f'================PASSO I================')
             print(f'K = {K}, _K = {_K}')
             print(f'L = {L}')
+            print(f'triangle = {triangle}')
+            print(f'trianglinha = {_triangle}')
+            print(f'inverted_triangle = {inverted_triangle}')
             _l1 = L[K[(i, a)][0]]
             _l2 = L[K[(i, a)][1]]
             print(f'\t _l1 = {_l1}')
@@ -72,96 +77,124 @@ def min_nlogn(P: AFD):
             new_i = str(t)
             new_j = str(old_iaj[2])  # ultima char de iaj
             new_iaj = new_i+a+new_j
-            print(f'\t L old -> {L}')
             L[new_iaj] = L.pop(old_iaj)
-            print(f'\t L new-> {L}')
-            print(f'\ttrianglinha old-> {_triangle}')
             _triangle[(i, a)].remove(old_iaj)
             _triangle[(t, a)] = [new_iaj]
-            print(f'\ttrianglinha new-> {_triangle}')
             if len(_triangle[(i, a)]) < 2:
                 _K.remove((i, a))
                 K.pop((i, a))
-            print(f'\nnew_iaj -> {L[new_iaj]}:\n')
+            print(f'new_iaj -> {L[new_iaj]}')
+            print(f'new L = {L}')
+            print(f'new K = {K},_K = {_K}')
+            print(f'trianglinha = {_triangle}')
+            print(f'triangle = {triangle}')
+            for q in L[new_iaj]:
+                triangle[(q,a)] = new_iaj
+            print(f'triangle atualizado os ponteiros = {triangle}')
+
+            _f = input('>')
             for q in L[new_iaj]: # passo ii
-                print(f'\t\t q new_iaj -> {q}')
+                print(f'================PASSO II.1================')
+                print(f'\tK = {K}, _K = {_K}')
+                print(f'\tL = {L}')
+                print(f'\ttriangle = {triangle}')
+                print(f'\ttrianglinha = {_triangle}')
+                print(f'\tinverted_triangle = {inverted_triangle}')
                 for b in (P.alphabet - set(a)): # passo ii.1
                     print(f'\t\t triangle({q},{b}) = {triangle[(q,b)]}')
-                    print(f'\t\t\t L(i,b,k) = {L[triangle[(q,b)]]}')
-                    unique_record = L[triangle[(q, b)]]  # L(i,b,k)
-                    if unique_record and q in unique_record:
+                    unique_record = triangle[(q, b)]  # L(i,b,k)
+                    if L[unique_record]:
                         # delete the record from L(i,b,k)
-                        L[triangle[(q, b)]].remove(q)
+                        L[unique_record].remove(q)
                     new_ibk = str(t)+b+str(triangle[(q, b)][2]) # L(t+1,b,k)
                     L[new_ibk] = set(q)  # inserting it into L(t+1,b,k)
-                    
-                    if len(L[triangle[(q, b)]]) == 0: # if L(i,b,k) becomes empty
-                        pointer_ib = (triangle[(q, b)][0], b)
-                        _triangle[pointer_ib].remove(triangle[(q, b)]) # we delete the pointer to L(i,b,k)
+                    triangle[(q,b)] = new_ibk
+                    # triangle[(q,b)] = new_ibk # atualiza pointer de triangle
+                    print(f'\t\tverifica L[{unique_record}]')
+                    if len(L[unique_record]) == 0: # if L(i,b,k) becomes empty
+                        pointer_ib = (int(unique_record[0]), b)
+                        print(f'======================================')
+                        print(f'pointer_ib -> {pointer_ib}')
+                        print(f'_triangle -> {_triangle}')
+                        print(f'\tL = {L}')
+                        print(f'K -> {K}, _K = {_K}')
+                        print(f'======================================')
+                        _triangle[pointer_ib].remove(unique_record) # we delete the pointer to L(i,b,k)
                         K.pop(pointer_ib) # and eventually the pointer from k
                         _K.remove(pointer_ib)
-
+                        # triangle.pop((q,b)) # remove pointer 
+                    print(f'\tL ->{L}') 
+                    print(f'\ttriangle ->{triangle}')
+                    print(f'\ttrianglinha = {_triangle}')
                     if _triangle.get((t,b)) is None: # and eventually, we have to add to K a pointer
                         _triangle[(t,b)] = [] 
                     if new_ibk not in _triangle[(t,b)]:
                         _triangle[(t,b)].append(new_ibk) # we have to add to triangle' a pointer to L(t+1,b,k)
-                    print(f'\t\t_triangle({t},{b}) = {_triangle[(t,b)]}')
+                    print(f'\ttrianglinha = {_triangle}')
                     if len(_triangle[(t,b)]) >= 2:
                         if K.get((t,b)) is None:
                             K[(t, b)] = []
-                            print('====================')
-                            print(K[(t,b)])
-                            print('====================')
                         if _triangle[(t,b)] not in K[(t,b)]:
-                            print('====================')
-                            print(K[(t,b)])
-                            print('====================')
                             # K[(t,b)].append(_triangle[(t,b)])
                             K[(t,b)] = list(set(K[(t,b)]).union(set(_triangle[(t,b)])))
                             _K.append((t,b))
-
+                    print(f'\tK = {K}, _K = {_K}')
+                    print(f'\tL = {L}')
+                _f = input('>')
+                print(f'================PASSO II.2================')
+                print(f'\tK = {K}, _K = {_K}')
+                print(f'\tL = {L}')
+                print(f'\ttriangle = {triangle}')
+                print(f'\ttrianglinha = {_triangle}')
+                print(f'\tinverted_triangle = {inverted_triangle}')
                 for b in P.alphabet: # passo ii.2
                     if inverted_triangle.get((b,q)):
-                        print(f'\t -> {inverted_triangle[(b,q)]}')
+                        print(f'\t inverted_triangle({b},{q}) -> {inverted_triangle[(b,q)]}')
                         for p in inverted_triangle[(b,q)]:
-                            unique_record_2 = L[triangle[(p,b)]] # we use triangle for finging the unique record 
-                            print(f'\t\tp->{p}')
-                            print(f'\t\tunique_record_2 = {unique_record_2}')
-                            print(f'\t\t L(k,b,i)= {triangle[(p,b)]}')
-                            print(f'\t\t L(k,b,i) = {L[triangle[(p,b)]]}')
-                            k = str(triangle[(p,b)][0])
-                            if unique_record_2 and p in unique_record_2: # L(k,b,i)
-                                L[triangle[(p,b)]].remove(p) # we delete p from this list L(k,b,i)
+                            unique_record_2 = triangle[(p,b)] # we use triangle for finging the unique record 
+                            print(f'\t p->{p}, unique_record_2 = {unique_record_2}')
+                            print(f'\t triangle[({p},{b})]= {triangle[(p,b)]}')
+                            # print(f'\t\t L({triangle[(p,b)]}) = {L[triangle[(p,b)]]}')
+                            k = str(unique_record_2[0])
+                            if L[unique_record_2]: # L(k,b,i)
+                                L[unique_record_2].remove(p) # we delete p from this list L(k,b,i)
                             new_kbt = k+b+str(t)
-                            L[new_kbt] = set(p) # inserting it into L(k,b,t+1)
-                            print(f'\t L(new_kbt) = {L[new_kbt]}')
-
-                            if len(L[triangle[(p,b)]]) == 0: # if L(k,b,i) becomes empty 
-                                print(f'\t\t L(k,b,i) -> {triangle[(p,b)]}')
+                            if L.get(new_kbt) is None:
+                                L[new_kbt] = set()
+                            L[new_kbt] = L[new_kbt].union(set(p)) # inserting it into L(k,b,t+1)
+                            print(f'\t L({triangle[(p,b)]}) = {L[triangle[(p,b)]]}')
+                            print(f'\t L({new_kbt}) = {L[new_kbt]}')
+                            triangle[(p,b)] = new_kbt
+                            print(f'\t triangle = {triangle}')
+                            print(f'\t L -> {L}')
+                            print(f'\t verificando L[{unique_record_2}]')
+                            if len(L[unique_record_2]) == 0: # if L(k,b,i) becomes empty 
                                 pointer_kb = (int(k),b) 
-                                print(f'\t\t pointer_kb -> {pointer_kb}')
-                                print(f'\t\t trianglinha -> {_triangle}')
-                                _triangle[pointer_kb].remove(triangle[(p,b)]) # we delete the pointer to L(k,b,i) from triangle'
+                                _triangle[pointer_kb].remove(unique_record_2) # we delete the pointer to L(k,b,i) from triangle'
                                 if K.get(pointer_kb):
                                     K.pop(pointer_kb) # and eventually the pointer from k
                                     _K.remove(pointer_kb)
+                            
+                            print(f'\t ({k},{b})')
+                            print(f'\t _triangle = {_triangle}')
+                            print(f'\t L -> {L}')
                             if _triangle.get((int(k),b)) is None: # we have to add to triangle' a pointer 
                                 _triangle[(int(k),b)] = [] 
                             if new_kbt not in _triangle[(int(k),b)]:
                                 _triangle[(int(k),b)].append(new_kbt)
-                            print(f'\t\t trianglinha(k,b) = {_triangle}')
+                            print(f'\t _triangle = {_triangle}')
                             if len(_triangle[(int(k),b)]) >= 2:
                                 if K.get((int(k),b)) is None:
                                     K[(int(k),b)] = []
                                 if _triangle[(int(k),b)] not in K[(int(k),b)]:
-                                    # print(f'->>>>>>>>>> {K[(int(k),b)]}')
-                                    # print(f'->>>>>>>>>> {_triangle[(int(k),b)]}')
                                     K[(int(k),b)] = list(set(K[(int(k),b)]).union(set(_triangle[(int(k),b)])))
                                     if (int(k),b) not in _K:
                                         _K.append((int(k),b))
         t += 1
 
     print(f'L = {L}')
+    print(f'triangle = {triangle}')
+    print(f'inverted_triangle = {inverted_triangle}')
 
 
 def min_nn(P: AFD):
