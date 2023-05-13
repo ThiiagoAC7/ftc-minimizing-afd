@@ -80,9 +80,14 @@ def min_nlogn(P: AFD):
             L[new_iaj] = L.pop(old_iaj)
             _triangle[(i, a)].remove(old_iaj)
             _triangle[(t, a)] = [new_iaj]
+
+            if old_iaj in K[(i,a)]: 
+                K[(i,a)].remove(old_iaj)
+            
             if len(_triangle[(i, a)]) < 2:
                 _K.remove((i, a))
                 K.pop((i, a))
+
             print(f'new_iaj -> {L[new_iaj]}')
             print(f'new L = {L}')
             print(f'new K = {K},_K = {_K}')
@@ -93,7 +98,7 @@ def min_nlogn(P: AFD):
             print(f'triangle atualizado os ponteiros = {triangle}')
 
             _f = input('>')
-            for q in L[new_iaj]: # passo ii
+            for q in L[new_iaj].copy(): # passo ii
                 print(f'================PASSO II.1================')
                 print(f'\tK = {K}, _K = {_K}')
                 print(f'\tL = {L}')
@@ -103,25 +108,30 @@ def min_nlogn(P: AFD):
                 for b in (P.alphabet - set(a)): # passo ii.1
                     print(f'\t\t triangle({q},{b}) = {triangle[(q,b)]}')
                     unique_record = triangle[(q, b)]  # L(i,b,k)
-                    if L[unique_record]:
+                    if L[unique_record] and q in L[unique_record]:
                         # delete the record from L(i,b,k)
                         L[unique_record].remove(q)
                     new_ibk = str(t)+b+str(triangle[(q, b)][2]) # L(t+1,b,k)
-                    L[new_ibk] = set(q)  # inserting it into L(t+1,b,k)
+                    if L.get(new_ibk) is None:
+                        L[new_ibk] = set()  # inserting it into L(t+1,b,k)
+                    L[new_ibk] = L[new_ibk].union(set(q))  # inserting it into L(t+1,b,k)
                     triangle[(q,b)] = new_ibk
                     # triangle[(q,b)] = new_ibk # atualiza pointer de triangle
                     print(f'\t\tverifica L[{unique_record}]')
                     if len(L[unique_record]) == 0: # if L(i,b,k) becomes empty
                         pointer_ib = (int(unique_record[0]), b)
                         print(f'======================================')
+                        print(f'unique_record-> {unique_record}')
                         print(f'pointer_ib -> {pointer_ib}')
                         print(f'_triangle -> {_triangle}')
-                        print(f'\tL = {L}')
+                        print(f'L = {L}')
                         print(f'K -> {K}, _K = {_K}')
                         print(f'======================================')
-                        _triangle[pointer_ib].remove(unique_record) # we delete the pointer to L(i,b,k)
-                        K.pop(pointer_ib) # and eventually the pointer from k
-                        _K.remove(pointer_ib)
+                        if unique_record in _triangle[pointer_ib]:
+                            _triangle[pointer_ib].remove(unique_record) # we delete the pointer to L(i,b,k)
+                        if K.get(pointer_ib):
+                            K.pop(pointer_ib) # and eventually the pointer from k
+                            _K.remove(pointer_ib)
                         # triangle.pop((q,b)) # remove pointer 
                     print(f'\tL ->{L}') 
                     print(f'\ttriangle ->{triangle}')
@@ -156,7 +166,7 @@ def min_nlogn(P: AFD):
                             print(f'\t triangle[({p},{b})]= {triangle[(p,b)]}')
                             # print(f'\t\t L({triangle[(p,b)]}) = {L[triangle[(p,b)]]}')
                             k = str(unique_record_2[0])
-                            if L[unique_record_2]: # L(k,b,i)
+                            if L[unique_record_2] and p in L[unique_record_2]: # L(k,b,i)
                                 L[unique_record_2].remove(p) # we delete p from this list L(k,b,i)
                             new_kbt = k+b+str(t)
                             if L.get(new_kbt) is None:
@@ -190,6 +200,10 @@ def min_nlogn(P: AFD):
                                     K[(int(k),b)] = list(set(K[(int(k),b)]).union(set(_triangle[(int(k),b)])))
                                     if (int(k),b) not in _K:
                                         _K.append((int(k),b))
+                print(f'q -> {q}, L[{new_iaj}] = {L[new_iaj]}')
+                if len(L[new_iaj]) == 0: 
+                    t += 1
+                    continue
         t += 1
 
     print(f'L = {L}')
