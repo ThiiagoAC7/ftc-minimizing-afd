@@ -89,7 +89,7 @@ def min_nlogn(P: AFD):
                     print(f'\t\t triangle({q},{b}) = {triangle[(q,b)]}')
                     print(f'\t\t\t L(i,b,k) = {L[triangle[(q,b)]]}')
                     unique_record = L[triangle[(q, b)]]  # L(i,b,k)
-                    if unique_record:
+                    if unique_record and q in unique_record:
                         # delete the record from L(i,b,k)
                         L[triangle[(q, b)]].remove(q)
                     new_ibk = str(t)+b+str(triangle[(q, b)][2]) # L(t+1,b,k)
@@ -99,6 +99,7 @@ def min_nlogn(P: AFD):
                         pointer_ib = (triangle[(q, b)][0], b)
                         _triangle[pointer_ib].remove(triangle[(q, b)]) # we delete the pointer to L(i,b,k)
                         K.pop(pointer_ib) # and eventually the pointer from k
+                        _K.remove(pointer_ib)
 
                     if _triangle.get((t,b)) is None: # and eventually, we have to add to K a pointer
                         _triangle[(t,b)] = [] 
@@ -116,7 +117,7 @@ def min_nlogn(P: AFD):
                             print(K[(t,b)])
                             print('====================')
                             # K[(t,b)].append(_triangle[(t,b)])
-                            K[(t,b)] = list(set(K[(t,b)]) & set(_triangle[(t,b)]))
+                            K[(t,b)] = list(set(K[(t,b)]).union(set(_triangle[(t,b)])))
                             _K.append((t,b))
 
                 for b in P.alphabet: # passo ii.2
@@ -129,7 +130,7 @@ def min_nlogn(P: AFD):
                             print(f'\t\t L(k,b,i)= {triangle[(p,b)]}')
                             print(f'\t\t L(k,b,i) = {L[triangle[(p,b)]]}')
                             k = str(triangle[(p,b)][0])
-                            if unique_record_2: # L(k,b,i)
+                            if unique_record_2 and p in unique_record_2: # L(k,b,i)
                                 L[triangle[(p,b)]].remove(p) # we delete p from this list L(k,b,i)
                             new_kbt = k+b+str(t)
                             L[new_kbt] = set(p) # inserting it into L(k,b,t+1)
@@ -143,6 +144,7 @@ def min_nlogn(P: AFD):
                                 _triangle[pointer_kb].remove(triangle[(p,b)]) # we delete the pointer to L(k,b,i) from triangle'
                                 if K.get(pointer_kb):
                                     K.pop(pointer_kb) # and eventually the pointer from k
+                                    _K.remove(pointer_kb)
                             if _triangle.get((int(k),b)) is None: # we have to add to triangle' a pointer 
                                 _triangle[(int(k),b)] = [] 
                             if new_kbt not in _triangle[(int(k),b)]:
@@ -151,20 +153,12 @@ def min_nlogn(P: AFD):
                             if len(_triangle[(int(k),b)]) >= 2:
                                 if K.get((int(k),b)) is None:
                                     K[(int(k),b)] = []
-                                    print('====================')
-                                    print(K[(int(k),b)])
-                                    print('====================')
                                 if _triangle[(int(k),b)] not in K[(int(k),b)]:
                                     # print(f'->>>>>>>>>> {K[(int(k),b)]}')
                                     # print(f'->>>>>>>>>> {_triangle[(int(k),b)]}')
-
-                                    # ADD IF DIFFERENT !!!
-                                    K[(int(k),b)] = K[(int(k),b)] +_triangle[(int(k),b)]
+                                    K[(int(k),b)] = list(set(K[(int(k),b)]).union(set(_triangle[(int(k),b)])))
                                     if (int(k),b) not in _K:
                                         _K.append((int(k),b))
-                                    print('====================')
-                                    print(K[(int(k),b)])
-                                    print('====================')
         t += 1
 
     print(f'L = {L}')
