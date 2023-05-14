@@ -95,26 +95,30 @@ def write_xml(P: AFD, filename):
         f.write('\t</automaton>&#13;\n')
         f.write('</structure>\n')
 
+def create_circular_dfa(num_states):
+    states = {f'q{i}' for i in range(num_states)}
+    alphabet = {'0', '1'}
+    transitions = {}
+    init = 'q0'
+    finals = {'q0'}
+
+    for i in range(num_states):
+        transitions[(f'q{i}', '0')] = f'q{(i+1) % num_states}'
+        transitions[(f'q{i}', '1')] = f'q{i}'
+
+    return AFD(states, alphabet, transitions, init, finals)
 
 def main():
-    p = parse_xml('./tests/dfa_40.jff')
-    # p = parse_xml( './tests/unreachable_states.jff')
-
-    p.remove_unreachable_states()
-
-    # start = time.time()
-    # min_p = min_nn(p)
-    # print(min_p)
-    # end = time.time()
-
-    # write_xml(min_p, '_test_n2.jff')
+    p = parse_xml('./tests/dfa_circular_100.jff')
+    # write_xml(create_circular_dfa(11), 'dfa_circular_11.jff')
+    # p.remove_unreachable_states()
 
     # _start = time.time()
     min_p = min_nlogn(p)
     # _end = time.time()
     
     # print(min_p)
-    # write_xml(min_p, '_test_modded.jff')
+    write_xml(min_p, '_test_circular_100.jff')
     # time_nn = end-start
 
     # print(f'time n^2 = {end-start}')
