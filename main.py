@@ -68,6 +68,7 @@ def write_xml(P: AFD, filename):
         f.write('\t\t<!--The list of states.-->&#13;\n')
 
         _index_state = {}
+        # _states = sorted(P.states, key=lambda x: int(x[1:]))
         for index, state in enumerate(P.states):
             _index_state[state] = index
             f.write(f'\t\t<state id="{index}" name="{state}">&#13;\n')
@@ -95,6 +96,7 @@ def write_xml(P: AFD, filename):
         f.write('\t</automaton>&#13;\n')
         f.write('</structure>\n')
 
+
 def create_circular_dfa(num_states):
     states = {f'q{i}' for i in range(num_states)}
     alphabet = {'0', '1'}
@@ -103,26 +105,33 @@ def create_circular_dfa(num_states):
     finals = {'q0'}
 
     for i in range(num_states):
-        transitions[(f'q{i}', '0')] = f'q{(i+1) % num_states}'
+        transitions[(f'q{i}', '0')] = f'q{i+1 if i < num_states-1 else 0}'
         transitions[(f'q{i}', '1')] = f'q{i}'
 
     return AFD(states, alphabet, transitions, init, finals)
 
+
 def main():
-    p = parse_xml('./tests/dfa_circular_100.jff')
-    # write_xml(create_circular_dfa(11), 'dfa_circular_11.jff')
-    # p.remove_unreachable_states()
+    p = parse_xml('./tests/test_livro.jff')
+    # write_xml(create_circular_dfa(500), 'dfa_circular_500.jff')
+    p.remove_unreachable_states()
 
-    # _start = time.time()
-    min_p = min_nlogn(p)
-    # _end = time.time()
-    
-    # print(min_p)
-    write_xml(min_p, '_test_circular_100.jff')
-    # time_nn = end-start
+    _start = time.time()
+    _min_p = min_nlogn(p)
+    _end = time.time()
 
-    # print(f'time n^2 = {end-start}')
-    # print(f'time nlogn = {end-start}')
+
+    start = time.time()
+    min_p = min_nn(p)
+    end = time.time()
+
+    write_xml(_min_p, 'test_livro_nlgn.jff')
+    write_xml(min_p, 'test_livro_nn.jff')
+    time_nn = end-start
+    time_nlogn = _end-_start
+
+    print(f'time n^2 = {time_nn}')
+    print(f'time nlogn = {time_nlogn}')
 
 
 if __name__ == "__main__":

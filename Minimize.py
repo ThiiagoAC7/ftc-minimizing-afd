@@ -48,9 +48,10 @@ def min_nlogn(P: AFD):
     K = dict(filter(lambda elem: len(elem[1]) >= 2, _triangle.items()))
 
     _K = list(K.keys())
+    
 
-    while len(_K) > 0:
-        for i, a in _K:
+    while len(K.copy()) > 0:
+        for i, a in K.copy():
             _l1 = L[K[(i, a)][0]]
             _l2 = L[K[(i, a)][1]]
             old_iaj = ""
@@ -87,8 +88,7 @@ def min_nlogn(P: AFD):
                             # delete the record from L(i,b,k)
                             L[unique_record].remove(q)
                         # L(t+1,b,k)
-                        new_ibk = str(t)+','+b+',' + \
-                            str(triangle[(q, b)].split(',')[2])
+                        new_ibk = str(t)+','+b+',' + str(triangle[(q, b)].split(',')[2])
                         if L.get(new_ibk) is None:
                             L[new_ibk] = set()  # inserting it into L(t+1,b,k)
                         # inserting it into L(t+1,b,k)
@@ -112,10 +112,9 @@ def min_nlogn(P: AFD):
                     if len(_triangle[(t, b)]) >= 2:
                         if K.get((t, b)) is None:
                             K[(t, b)] = []
-                        if _triangle[(t, b)] not in K[(t, b)]:
-                            K[(t, b)] = list(set(K[(t, b)]).union(
-                                set(_triangle[(t, b)])))
-                            _K = list(K.keys())
+                        # if _triangle[(t, b)] not in K[(t, b)]:
+                        K[(t, b)] = list(set(K[(t, b)]).union( set(_triangle[(t, b)])))
+                        _K = list(K.keys())
 
                 for b in P.alphabet:  # passo ii.2
                     if inverted_triangle.get((b, q)):
@@ -138,8 +137,7 @@ def min_nlogn(P: AFD):
                                     pointer_kb = (int(k), b)
                                     if unique_record_2 in _triangle[pointer_kb]:
                                         # we delete the pointer to L(k,b,i) from triangle'
-                                        _triangle[pointer_kb].remove(
-                                            unique_record_2)
+                                        _triangle[pointer_kb].remove(unique_record_2)
                                     if K.get(pointer_kb):
                                         # and eventually the pointer from k
                                         K.pop(pointer_kb)
@@ -153,14 +151,14 @@ def min_nlogn(P: AFD):
                             if len(_triangle[(int(k), b)]) >= 2:
                                 if K.get((int(k), b)) is None:
                                     K[(int(k), b)] = []
-                                if _triangle[(int(k), b)] not in K[(int(k), b)]:
-                                    K[(int(k), b)] = list(set(K[(int(k), b)]).union(
-                                        set(_triangle[(int(k), b)])))
-                                    _K = list(K.keys())
-                if len(L[new_iaj]) == 0:
-                    continue
+                                # if _triangle[(int(k), b)] not in K[(int(k), b)]:
+                                K[(int(k), b)] = list(set(K[(int(k), b)]).union(set(_triangle[(int(k), b)])))
+                                _K = list(K.keys())
+                # if len(L[new_iaj]) == 0:
+                #     continue
         t += 1
 
+    
     init = ''
     finals = set()
     for i in L.keys():
@@ -271,62 +269,3 @@ def min_nn(P: AFD):
         SN.append(str(i))
 
     return AFD(set(SN), P.alphabet, _T, _i, _f)
-
-
-def min_new(P: AFD):
-
-    inverted_state_table = {}
-
-    # constroi tabela de estados invertida
-    for key, value in P.transitions.items():
-        r_state = value
-        a = key[1]
-        l_state = key[0]
-        aux = inverted_state_table.get((r_state, a))
-        if aux is None:
-            inverted_state_table[(r_state, a)] = []
-        inverted_state_table[(r_state, a)].append(l_state)
-
-    partitions = [P.finals, P.states - P.finals]
-    w = [P.finals, P.states - P.finals]
-
-    while w != []:
-        print(f'W = {w}')
-        print(f'P = {partitions}')
-        current_partition = w.pop(0)
-        print(f'current_partition = {current_partition}')
-        for a in P.alphabet:
-            x = set()  # states that reach the current partition
-            for e in current_partition:
-                t = inverted_state_table.get((e, a))
-                if t:
-                    x = x.union(t)
-            print(
-                f'\testados que chegam em {current_partition} com {a} -> {x}')
-            for r in partitions:
-                print(f'\t r -> {r}, x = {x}')
-                if (len(r & x) > 0) and not (r <= x):
-                    splitted_partition_1 = set(r) & x  # r1
-                    splitted_partition_2 = set(r) - x  # r2
-                    print(f'\t r1 -> {splitted_partition_1}')
-                    print(f'\t r2 -> {splitted_partition_2}')
-                    partitions.remove(r)
-                    partitions.append(splitted_partition_1)
-                    partitions.append(splitted_partition_2)
-                    if r in w:
-                        print(
-                            f'\t\tt {r} pertence à {w}, replace r com r1 e r2')
-                        w.remove(r)
-                        w.append(splitted_partition_1)
-                        w.append(splitted_partition_2)
-                    else:
-                        if len(splitted_partition_1) <= len(splitted_partition_2):
-                            print(f'\t\tadd r1 = {splitted_partition_1}')
-                            w.append(splitted_partition_1)
-                        else:
-                            print(f'\t\tadd r2 = {splitted_partition_1}')
-                            w.append(splitted_partition_2)
-        # _fodase = input('>')
-
-    print(partitions)
-    # construir AFD a partir de estados criados
